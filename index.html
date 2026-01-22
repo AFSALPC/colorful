@@ -27,55 +27,7 @@
             height: 100%;
         }
 
-        .typing-area {
-            position: fixed;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
 
-        #textInput {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 30px;
-            padding: 15px 30px;
-            font-size: 1.5em;
-            color: #fff;
-            width: 400px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s;
-        }
-
-        #textInput:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.5);
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-        }
-
-        #textInput::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .instructions {
-            position: fixed;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1.1em;
-            z-index: 100;
-            width: 80%;
-            max-width: 800px;
-            letter-spacing: 0.5px;
-            font-weight: 300;
-        }
 
         .letter-display {
             position: absolute;
@@ -86,48 +38,7 @@
             text-shadow: 0 0 20px currentColor;
         }
 
-        .mode-button {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.6);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            font-size: 1.5em;
-            cursor: pointer;
-            transition: all 0.3s;
-            backdrop-filter: blur(10px);
-            position: relative;
-        }
 
-        .mode-button:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.4);
-            color: rgba(255, 255, 255, 0.8);
-            transform: scale(1.05);
-        }
-
-        .mode-button::after {
-            content: attr(title);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.8em;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-            margin-bottom: 10px;
-        }
-
-        .mode-button:hover::after {
-            opacity: 1;
-        }
 
         @keyframes float {
             0% {
@@ -151,13 +62,7 @@
 <body>
     <canvas id="canvas"></canvas>
     
-    <div class="instructions" id="instructions">
-    </div>
-    
-    <div class="typing-area">
-        <input type="text" id="textInput" autofocus>
-        <button id="modeBtn" class="mode-button">◐</button>
-    </div>
+    <input type="text" id="textInput" autofocus style="position: absolute; opacity: 0; pointer-events: none;">
 
     <script>
         const TRANSLATIONS = {
@@ -193,12 +98,6 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const textInput = document.getElementById('textInput');
-        const modeBtn = document.getElementById('modeBtn');
-        const instructions = document.getElementById('instructions');
-
-        // Set localized content
-        instructions.textContent = t('instructions');
-        textInput.placeholder = t('inputPlaceholder');
 
         let width = window.innerWidth;
         let height = window.innerHeight;
@@ -456,14 +355,11 @@
             requestAnimationFrame(animate);
         }
 
-        // Mode button click
-        modeBtn.addEventListener('click', () => {
-            currentMode = (currentMode + 1) % modes.length;
-            modeBtn.textContent = modeSymbols[currentMode];
-            
-            // Update tooltip
-            const modeKeys = ['cosmicMode', 'minimalMode', 'explosiveMode'];
-            modeBtn.title = t(modeKeys[currentMode]);
+        // Keyboard shortcuts for mode switching
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'm' || e.key === 'M') {
+                currentMode = (currentMode + 1) % modes.length;
+            }
         });
 
         // Event listeners
@@ -479,36 +375,16 @@
             createClickEffect(e.clientX, e.clientY);
         });
 
-        let lastText = '';
-        textInput.addEventListener('input', (e) => {
+        document.addEventListener('keypress', (e) => {
             initAudio();
-            const currentText = e.target.value;
-            
-            // Find newly typed character
-            if (currentText.length > lastText.length) {
-                const newChar = currentText[currentText.length - 1];
-                createLetterEffect(newChar);
-            }
-            
-            lastText = currentText;
-        });
-
-        // Clear input periodically for continuous typing
-        textInput.addEventListener('keydown', (e) => {
-            if (textInput.value.length > 30) {
-                textInput.value = '';
-                lastText = '';
+            const char = e.key;
+            if (char.length === 1) { // Only single characters
+                createLetterEffect(char);
             }
         });
-
-        // Initialize mode button tooltip
-        modeBtn.title = t('cosmicMode');
 
         // Start animation
         animate();
-
-        // Focus input on load
-        textInput.focus();
     </script>
 </body>
 </html>
