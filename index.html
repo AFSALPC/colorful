@@ -232,6 +232,45 @@
             oscillator.stop(audioContext.currentTime + duration);
         }
 
+        function speakLetter(letter) {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(letter);
+                utterance.rate = 0.6; // Very slow, like a 2-year-old learning to talk
+                utterance.pitch = 2.0; // Maximum pitch for baby girl voice
+                utterance.volume = 1;
+                
+                // Try to select a female/child voice if available
+                const voices = speechSynthesis.getVoices();
+                const babyVoice = voices.find(voice => 
+                    voice.name.toLowerCase().includes('female') || 
+                    voice.name.toLowerCase().includes('girl') ||
+                    voice.name.toLowerCase().includes('woman') ||
+                    voice.name.toLowerCase().includes('google uk english female') ||
+                    voice.name.toLowerCase().includes('samantha') ||
+                    voice.name.toLowerCase().includes('victoria') ||
+                    voice.name.toLowerCase().includes('karen') ||
+                    voice.name.toLowerCase().includes('zira') ||
+                    voice.gender === 'female'
+                );
+                
+                if (babyVoice) {
+                    utterance.voice = babyVoice;
+                }
+                
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // Load voices when they become available
+        if ('speechSynthesis' in window) {
+            speechSynthesis.onvoiceschanged = () => {
+                speechSynthesis.getVoices();
+            };
+        }
+
         function getPositionForLetter(letter) {
             // Create a unique position for each letter based on its character code
             const code = letter.charCodeAt(0);
@@ -253,7 +292,10 @@
             const frequency = letterFrequencies[char] || 440;
             const position = getPositionForLetter(char);
             
-            // Play the letter's sound
+            // Speak the letter like a baby learning
+            speakLetter(letter);
+            
+            // Play the letter's musical tone
             playNote(frequency);
             
             // Visual effects vary by mode
